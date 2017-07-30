@@ -5,6 +5,7 @@ metadata:
   labels:
     component: elasticsearch
     role: data
+    es-cluster: myesdb
 spec:
   serviceName: elasticsearch-data
   replicas: 3
@@ -13,6 +14,7 @@ spec:
       labels:
         component: elasticsearch
         role: data
+        es-cluster: myesdb
       annotations:
         pod.beta.kubernetes.io/init-containers: '[
           {
@@ -26,6 +28,17 @@ spec:
           }
         ]'
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  component: elasticsearch
+                  role: data
+                  es-cluster: myesdb
+              topologyKey: kubernetes.io/hostname
       containers:
       - name: es-data
         securityContext:
@@ -65,7 +78,7 @@ spec:
   - metadata:
       name: storage
       annotations:
-        volume.beta.kubernetes.io/storage-class: standard
+        volume.beta.kubernetes.io/storage-class: hostpath-dynamic
     spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:

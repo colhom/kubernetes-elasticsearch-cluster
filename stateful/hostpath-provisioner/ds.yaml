@@ -1,0 +1,52 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  creationTimestamp: null
+  generation: 1
+  labels:
+    k8s-app: hostpath-provisioner
+  name: hostpath-provisioner
+  namespace: tectonic-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: hostpath-provisioner
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        k8s-app: hostpath-provisioner
+    spec:
+      serviceAccountName: hostpath-provisioner
+      containers:
+      - env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: PV_DIR
+          value: "/pvdir"
+        - name: PV_HOSTPATH_DIR
+          value: "/mnt/local-disk"
+        - name: RECLAIM_POLICY
+          value: "Delete"
+        image: quay.io/colin_hom/hostpath-provisioner:742bf45ddc450f7a6da3c6e369eaaa4cf867755c
+        imagePullPolicy: IfNotPresent
+        name: hostpath-provisioner
+        volumeMounts:
+        - mountPath: /pvdir
+          name: pvdir
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+      - name: coreos-pull-secret
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      tolerations:
+      - effect: NoExecute
+        key: node-role.kubernetes.io/master
+        operator: Exists
+      volumes:
+      - hostPath:
+          path: "/mnt/local-disk"
+        name: pvdir
