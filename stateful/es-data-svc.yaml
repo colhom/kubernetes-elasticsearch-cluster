@@ -5,6 +5,7 @@ metadata:
   labels:
     component: elasticsearch
     role: data
+    es-cluster: myesdb
 spec:
   ports:
   - port: 9300
@@ -13,3 +14,4 @@ spec:
   selector:
     component: elasticsearch
     role: data
+    es-cluster: myesdb
